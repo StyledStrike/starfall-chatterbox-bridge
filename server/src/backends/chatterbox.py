@@ -74,7 +74,7 @@ class ChatterboxBackend:
             cfg_weight=cfg,
             temperature=temperature,
             max_new_tokens=300,
-            max_cache_len=500,
+            max_cache_len=1000,
             repetition_penalty=1.5,
             #min_p=0.05,
             #top_p=1.0,
