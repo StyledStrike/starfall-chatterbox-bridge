@@ -41,7 +41,8 @@ class WSSManager():
             self.onConnectCallback()
 
     def _onDisconnect(self, client, server):
-        logger.info("[WSS] Disconnected:", client["id"])
+        if client is not None:
+            logger.info("[WSS] Disconnected:", client["id"])
 
         if callable(self.onDisconnectCallback):
             self.onDisconnectCallback()
