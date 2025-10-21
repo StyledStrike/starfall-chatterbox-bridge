@@ -1,0 +1,270 @@
+--@name TTS v3
+--@author StyledStrike
+--@client
+--@owneronly
+
+local Config = {
+    -- Python server address & port
+    host = "127.0.0.1",
+    port = 8001,
+
+    -- Should we ignore team chat messages?
+    ignoreTeamChat = true,
+
+    -- Ignore all messages that start with these
+    ignorePrefixes = {
+        ["!"] = true,
+        [">"] = true,
+    },
+
+    -- Type this in the chat to stop all audio clips being played
+    stopAudioCommand = "stopall",
+}
+
+--[[
+    Store some effect combos to be in each voice preset
+]]
+
+local EFFECT_PRESETS = {
+    ["Ethereal"] = "reverse reverb 70 reverse",
+    ["Space Robot"] = "flanger 1 1 0 100 0.3 vol 8.0db",
+    ["Glorp"] = "highpass 200 stretch 1.5 10 reverb 80 20 5 0 5 4 phaser norm 0.0",
+}
+
+--[[
+    Store some voice presets, these will be shown on the menu
+]]
+
+local VOICE_PRESETS = {
+    ["GMan"] = {
+        backend = "chatterbox",
+        cfg = 0.2,
+        exaggeration = 0.2,
+        temperature = 0.9,
+        inputAudioPath = "voice-gman.wav"
+    },
+
+    ["Father Grigory"] = {
+        backend = "chatterbox",
+        cfg = 0.7,
+        exaggeration = 0.5,
+        temperature = 0.9,
+        inputAudioPath = "voice-grigory.wav"
+    },
+
+    ["Gabriel"] = {
+        backend = "chatterbox",
+        cfg = 0.3,
+        exaggeration = 0.5,
+        temperature = 1.8,
+        effects = EFFECT_PRESETS["Ethereal"],
+        inputAudioPath = "voice-gabriel.wav"
+    },
+
+    ["Missile Guy"] = {
+        backend = "chatterbox",
+        cfg = 0.5,
+        exaggeration = 0.6,
+        temperature = 0.9,
+        inputAudioPath = "voice-missile_guy.wav"
+    },
+
+    ["Quandale Dingle"] = {
+        backend = "chatterbox",
+        cfg = 0.5,
+        exaggeration = 0.4,
+        temperature = 1.3,
+        effects = "tempo -l 1.3 110",
+        inputAudioPath = "voice-quandale_dingle.wav"
+    },
+
+    ["TikTok Lady"] = {
+        backend = "chatterbox",
+        cfg = 0.5,
+        exaggeration = 1.1,
+        temperature = 0.9,
+        inputAudioPath = "voice-tiktok.wav"
+    },
+}
+
+--[[
+    Assign voice presets to players here, by using their Steam IDs.
+]]
+
+local PLAYER_PRESETS = {
+    -- Make the owner of this chip use this voice
+    [owner():getSteamID()] = VOICE_PRESETS["Missile Guy"],
+
+    -- Add other players here
+    ["STEAM_0:0:0"] = VOICE_PRESETS["Quandale Dingle"],
+}
+
+--[[
+    These are the language tags that you can add at the start
+    of a message, to let the TTS know which language to use
+    for pronunciation.
+]]
+
+local VALID_LANGUAGES = {
+    ["pl"] = "Polish",
+    ["ja"] = "Japanese",
+    ["hi"] = "Hindi",
+    ["da"] = "Danish",
+    ["tr"] = "Turkish",
+    ["no"] = "Norwegian",
+    ["ko"] = "Korean",
+    ["sv"] = "Swedish",
+    ["el"] = "Greek",
+    ["zh"] = "Chinese",
+    ["es"] = "Spanish",
+    ["ar"] = "Arabic",
+    ["pt"] = "Portuguese",
+    ["ru"] = "Russian",
+    ["he"] = "Hebrew",
+    ["fi"] = "Finnish",
+    ["sw"] = "Swahili",
+    ["ms"] = "Malay",
+    ["de"] = "German",
+    ["fr"] = "French",
+    ["en"] = "English",
+    ["nl"] = "Dutch",
+    ["it"] = "Italian",
+}
+
+local function TTSPrint( ... )
+    print( Color( 50, 0, 255 ), "[TTS] ", Color( 255, 255, 255 ), ... )
+end
+
+--[[
+    WebSocket client library.
+    Handles auto-reconnect & automatic JSON encoding/decoding.
+
+    This code requires the Chromium beta for Garry's Mod
+    selected on Steam, with the GModPatchTool applied.
+]]
+
+local WsClient = {
+    connected = false,
+    decodeJson = true,
+    autoConnect = true,
+
+    OnStateChange = function( state )
+        TTSPrint( "WebSocket " .. state )
+    end,
+
+    OnMessage = function( msg )
+        if msg.error then
+            TTSPrint( "Error: " .. msg.error )
+        else
+            printTable( msg )
+        end
+    end
+}
+
+function WsClient:SendTable( tbl )
+    if self.ws and self.connected then
+        self.ws:write( json.encode( tbl ) )
+    end
+end
+
+function WsClient:Disconnect()
+    if self.ws and self.ws:getState() == 1 then
+        self.ws:close()
+    end
+
+    self.ws = nil
+end
+
+function WsClient:Think()
+    if not self.autoConnect then return end
+
+    if self.ws then
+        local state = self.ws:getState()
+
+        if state ~= 0 and state ~= 1 then
+            self:Disconnect()
+        end
+
+        return
+    end
+
+    self.ws = WebSocket( Config.host, Config.port, false )
+
+    self.ws.onConnected = function()
+        self.OnStateChange( "connected" )
+        self.connected = true
+    end
+
+    self.ws.onDisconnected = function( _, errored )
+        self.connected = false
+        self:Disconnect()
+        self.OnStateChange( errored and "errored" or "disconnected" )
+    end
+
+    self.ws.onMessage = function( _, msg )
+        if msg == "pong" then return end
+
+        if self.decodeJson then
+            msg = json.decode( msg )
+        end
+
+        self.OnMessage( msg )
+    end
+
+    self.OnStateChange( "connecting" )
+    self.ws:connect()
+end
+
+hook.add( "Removed", "ws.CloseOnRemove", function()
+    WsClient.autoConnect = false
+    WsClient:Disconnect()
+end )
+
+timer.create( "ws.Think", 1, 0, function()
+    WsClient:Think()
+end )
+
+--[[
+    Listen for chat messages
+]]
+
+hook.add( "PlayerChat", "TTS.Generate", function( ply, text, teamOnly )
+    if teamOnly and Config.ignoreTeamChat then return end
+
+    text = string.trim( text )
+    if #text < 1 then return end
+
+    local prefix = text:sub( 1, 1 )
+    if Config.ignorePrefixes[prefix] then return end
+
+    if text == Config.stopAudioCommand and ply == owner() then
+        WsClient:SendTable( { command = "stopall" } )
+        return
+    end
+
+    -- Only allow players that are on the PLAYER_PRESETS list
+    local id = ply:getSteamID()
+    local data = PLAYER_PRESETS[id]
+    if not data then return end
+
+    -- Don't modify the original table
+    data = table.copy( data )
+
+    -- Check if a [language] tag is present at the start of the message
+    local _, _, lang = string.find( text, "^(%[%l%l%])", 1 )
+
+    if lang then
+        lang = lang:sub( 2, -2 )
+
+        if not VALID_LANGUAGES[lang] then
+            TTSPrint( "Unknown language: " .. lang )
+            return
+        end
+
+        text = text:sub( 5 ):trim()
+        data.language = lang
+    end
+
+    data.text = text
+    WsClient:SendTable( data )
+end )
