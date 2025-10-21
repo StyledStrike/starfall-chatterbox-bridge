@@ -129,7 +129,7 @@ You can also type `csay <message>` to use the Chatterbox TTS directly from the t
 
 # Known issues
 
-- First generation with Chatterbox can be slower, as it "warms up"
+- The first generation with a input audio file can be slower, as it caches the conditionals for the first time
 - SoX might show `sox WARN wav: wave header missing extended part of fmt chunk` warnings, they can be ignored
 - The provided SoX binaries for Windows do not support *.mp3* files, so you cannot use the TikTok TTS backend for now
 - Sometimes when exiting, the WebSocket server might throw an error. It can be ignored
