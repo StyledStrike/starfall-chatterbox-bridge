@@ -96,9 +96,9 @@ If you haven't done it already, install the Chromium Beta for Garry's Mod:
 - Select the `x86-64 - Chromium + 64 bit binaries` beta
 - Wait for Steam to download the necessary files
 
-> Note for Linux users: make sure to also run [GModPatchTool](https://github.com/solsticegamestudios/GModPatchTool) afterwards.
+After that, we also need to apply a patch to allow WebSockets to work, please follow instructions on [the GModPatchTool GitHub page](https://github.com/solsticegamestudios/GModPatchTool).
 
-Next, you should either copy `starfall-chatterbox-bridge/starfall-tts-v3.txt` to your `GarrysMod/garrysmod/data/starfall/` folder, or copy the contents from that file and paste them on the Starfall Editor.
+Last, you should either copy `starfall-chatterbox-bridge/starfall-tts-v3.txt` to your `GarrysMod/garrysmod/data/starfall/` folder, or copy the contents from that file and paste them on the Starfall Editor.
 
 # Setup a virtual audio cable
 
