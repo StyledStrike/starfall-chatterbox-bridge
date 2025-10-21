@@ -47,3 +47,9 @@ def getCacheDirectory(dirName: str = "."):
         os.makedirs(dirPath, exist_ok=True)
 
     return dirPath
+
+"""
+    Get the location of the input audio file.
+"""
+def getInputAudioFilePath(fileName: str):
+    return normpath(join(os.getcwd(), "..", "voices", fileName))

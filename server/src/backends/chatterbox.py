@@ -1,5 +1,6 @@
 import os
 import logger
+import config
 import torch
 import torchaudio
 
@@ -50,7 +51,7 @@ class ChatterboxBackend:
         })
 
         if inputAudioPath is not None:
-            inputAudioPath = join(os.getcwd(), "assets/", inputAudioPath)
+            inputAudioPath = config.getInputAudioFilePath(inputAudioPath)
 
             if not isfile(inputAudioPath):
                 raise ValueError(f"Invalid input audio file: {inputAudioPath}")
