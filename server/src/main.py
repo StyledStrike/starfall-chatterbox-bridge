@@ -23,6 +23,7 @@ class App():
             "soxDeviceType": config.getSOXDeviceType(),
             "soxDeviceName": config.getSOXDeviceName(),
 
+            # Default Chatterbox generation params when using the terminal
             "chatterboxLanguage": "en",
             "chatterboxExaggeration": 0.5,
             "chatterboxTemperature": 0.8,
@@ -54,7 +55,7 @@ class App():
     def run(self):
         self.terman.runForever()
         self.sox.stopAll()
-        self.wss.shutdown_gracefully()
+        self.wss.shutdown()
 
         for instance in self.backends.values():
             instance.shutdown()
