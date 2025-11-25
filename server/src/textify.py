@@ -67,6 +67,7 @@ VERBATIM_REPLACEMENTS = {
     "( °     ͜ʖ    °)": "wide lenny face",
     "(͡ ͡° ͜ つ ͡͡°)": "nosey lenny face",
     "¯\\_(ツ)_/¯": "shrug",
+    "乁( ͠° ͜ʖ °)ㄏ": "shrug lenny face",
     "( ͠° ͟ʖ ͡°)": "annoyed lenny face",
     "(╯°□°）╯︵ ┻━┻": "table flip",
     "(づ •◡• )づ": "cute lenny face",
