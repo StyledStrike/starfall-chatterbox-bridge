@@ -28,8 +28,10 @@ def getSOXDeviceType():
     return "waveaudio" if platform.system() == "Windows" else "pulseaudio"
 
 def getSOXDeviceName():
-    # On Linux, change this to match the PulseAudio device used for the virtual mic.
-    linuxAudioDeviceName = "alsa_output.pci-0000_30_00.6.analog-stereo"
+    # On Linux, change this to match the PulseAudio device name used for the virtual mic.
+    # You can use `wpctl status` to find a list of sinks, and use `wpctl inspect <ID>` to list
+    # properties from one. Copy the value of `node.name` and paste here.
+    linuxAudioDeviceName = "virtual-mic-in"
 
     return "CABLE Input" if platform.system() == "Windows" else linuxAudioDeviceName
 

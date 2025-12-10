@@ -1,3 +1,6 @@
 colorama
 websocket-server
 -e ./chatterbox
+
+# If you're experimenting newer PyTorch versions, install this
+# torchcodec
